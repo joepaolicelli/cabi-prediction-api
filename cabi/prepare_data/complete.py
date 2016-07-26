@@ -8,7 +8,7 @@ from pandas.tseries.offsets import Hour
 
 def complete(db_engine, selector, sample_size, balance=None):
     """
-    sample_size is ignored if balance is set to None.
+    sample_size is ignored unless balance is None.
     """
     df_orig = pd.read_sql_query(
         "SELECT * FROM station_status "

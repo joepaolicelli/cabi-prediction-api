@@ -7,7 +7,7 @@ import pandas as pd
 
 def temporal_only(db_engine, selector, sample_size, balance=None):
     """
-    sample_size is ignored if balance is set to True.
+    sample_size is ignored unless balance is None.
     """
     df_orig = pd.read_sql_query(
         "SELECT * FROM station_status "
