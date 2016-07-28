@@ -15,11 +15,13 @@ def analyze(db_engine, selector, prep_type, techniques):
     print("\n\nRESULTS")
     print("=" * 78, "\n")
 
-    for ques in ["Empty", "Full"]:
+    for ques in ["empty", "full"]:
         data = []
 
         for prep in prep_type:
-            raw_data = prep(db_engine, selector, int(1.0e5))
+            raw_data = prep(
+                db_engine, selector, "01/01/2015", "12/31/2015",
+                sample_size=int(1.0e5))
             # 70% of data for training, 30% for testing
             cutoff = int(0.7 * len(raw_data["X"]))
             data_parts = {
@@ -30,6 +32,7 @@ def analyze(db_engine, selector, prep_type, techniques):
                 "yemptytest": raw_data["yempty"][cutoff:],
                 "yfulltest": raw_data["yfull"][cutoff:]
             }
+
             data.append((prep.__name__, data_parts))
 
         print(ques)
@@ -43,7 +46,7 @@ def analyze(db_engine, selector, prep_type, techniques):
                 if len(data) > 1:
                     print(dt[0], ":", sep="")
 
-                if ques == "Empty":
+                if ques == "empty":
                     tnq(
                         dt[1]["Xtrain"], dt[1]["yemptytrain"],
                         dt[1]["Xtest"], dt[1]["yemptytest"])

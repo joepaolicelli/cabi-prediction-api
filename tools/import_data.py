@@ -1,56 +1,52 @@
+# Script to import historical station status data into a postgres database.
+#
+# Run this file directly, with all files to import listed as command line
+# arguments. To clear the database table, make the first argument "clear".
+
 import pandas as pd
 import sqlalchemy
 from sqlalchemy import create_engine
 import sys
-import traceback
 
-# These must be added for this to work.
+# Database information.
 host = ""
 port = ""
 dbname = ""
 user = ""
 password = ""
 
-filename = sys.argv[1]
+# Initialize database connection.
+engine = create_engine(
+    "postgresql+psycopg2://"
+    + user + ":" + password + "@"
+    + host + ":" + port + "/" + dbname)
 
-try:
-    # Initialize database connection.
-    engine = create_engine(
-        "postgresql+psycopg2://"
-        + user + ":" + password + "@"
-        + host + ":" + port + "/" + dbname)
+# Delete anything previously in the table.
+if sys.argv[1] == "clear" and engine.has_table("outages"):
+    engine.execute("DROP TABLE outages;")
+    print("Data cleared.")
 
-    counter = 0
-    chunksize = 100000
-    csv = pd.read_csv(
-        filename, chunksize=chunksize, header=None, engine="c",
-        names=["station_id", "bikes", "spaces", "ts"])
+for filename in sys.argv:
+    if filename != "import_data.py" and filename != "clear":
+        csv = pd.read_csv(
+            filename, skiprows=1, header=0, engine="c",
+            infer_datetime_format=True,
+            usecols=["Terminal Number", "Status", "Start", "End"],
+            parse_dates=["Start", "End"])
+        csv.rename(
+            index=None, columns={
+                "Terminal Number": "station_id",
+                "Status": "status",
+                "Start": "start",
+                "End": "end"
+            }, inplace=True)
 
-    # Delete anything previously in the table.
-    if engine.has_table("station_status"):
-        engine.execute("DROP TABLE station_status;")
-
-    for chunk in csv:
-        invalidstationmask = chunk.apply(
-            lambda row: (row["spaces"] == 0 and row["bikes"] == 0),
-            axis=1
-        )
-        cleanedchunk = chunk[~invalidstationmask]
-
-        cleanedchunk.to_sql(
-            "station_status", engine, if_exists="append",
+        csv.to_sql(
+            "outages", engine, if_exists="append",
             dtype={
                 "station_id": sqlalchemy.types.Integer,
-                "bikes": sqlalchemy.types.Integer,
-                "space": sqlalchemy.types.Integer,
-                "ts": sqlalchemy.types.DateTime
+                "status": sqlalchemy.types.String,
+                "start": sqlalchemy.types.DateTime,
+                "end": sqlalchemy.types.DateTime
             })
-        print("Imported " + str(counter) + " to "
-              + str(counter+(chunksize-1)) + ".")
-        counter += chunksize
-        if counter >= chunksize * 400:
-            break
-
-except Exception as e:
-    print("Error when trying to connect to database:\n", e)
-    print(traceback.print_exc())
+        print(filename, "imported.")

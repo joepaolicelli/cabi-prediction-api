@@ -22,12 +22,13 @@ try:
         + host + ":" + port + "/" + db_name)
 
     temps = pd.read_csv(
-        temps_filename, header=0, engine="c", infer_datetime_format=True,
-        usecols=["YR--MODAHRMN", "TEMP"], parse_dates=["YR--MODAHRMN"])
+        temps_filename, header=None, engine="c", infer_datetime_format=True,
+        delim_whitespace=True, na_values="-9999",
+        usecols=[0, 1, 2, 3, 4],
+        parse_dates={"ts": [0, 1, 2, 3]})
     temps.rename(
-        index=None, columns={"YR--MODAHRMN": "ts", "TEMP": "temp"},
+        index=None, columns={4: "temp"},
         inplace=True)
-    temps.drop(temps[temps.temp == "****"].index, inplace=True)
 
     precip = pd.read_csv(
         precip_filename, header=0, engine="c", infer_datetime_format=True,
