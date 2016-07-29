@@ -4,7 +4,7 @@ from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
 
 
-def brbm_rf(Xtr, ytr, Xte, yte):
+def brbm_rf(Xtr, ytr, Xte=None, yte=None):
     randomforest = ensemble.RandomForestClassifier(n_jobs=-1, n_estimators=100)
     rbm = BernoulliRBM(random_state=0)
     classifier = Pipeline(steps=[('rbm', rbm), ('randomforest', randomforest)])
