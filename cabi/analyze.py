@@ -1,7 +1,7 @@
 # analyze
 
 
-def analyze(db_engine, selector, prep_type, techniques):
+def analyze(db_engine, station_id, prep_type, techniques):
     """
     Run tests and print results using the passed techniques.
 
@@ -20,7 +20,7 @@ def analyze(db_engine, selector, prep_type, techniques):
 
         for prep in prep_type:
             raw_data = prep(
-                db_engine, selector, "01/01/2015", "12/31/2015",
+                db_engine, station_id, "01/01/2015", "12/31/2015",
                 sample_size=int(1.0e5))
             # 70% of data for training, 30% for testing
             cutoff = int(0.7 * len(raw_data["X"]))

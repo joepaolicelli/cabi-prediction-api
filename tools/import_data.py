@@ -22,12 +22,12 @@ engine = create_engine(
     + host + ":" + port + "/" + dbname)
 
 # Delete anything previously in the table.
-if sys.argv[1] == "clear" and engine.has_table("outages"):
-    engine.execute("DROP TABLE outages;")
+if sys.argv[1] == "clear" and engine.has_table("outage"):
+    engine.execute("DROP TABLE outage;")
     print("Data cleared.")
 
 for filename in sys.argv:
-    if filename != "import_data.py" and filename != "clear":
+    if "import_data.py" not in filename and filename != "clear":
         csv = pd.read_csv(
             filename, skiprows=1, header=0, engine="c",
             infer_datetime_format=True,
@@ -36,17 +36,17 @@ for filename in sys.argv:
         csv.rename(
             index=None, columns={
                 "Terminal Number": "station_id",
-                "Status": "status",
-                "Start": "start",
-                "End": "end"
+                "Status": "outage_type",
+                "Start": "outage_start",
+                "End": "outage_end"
             }, inplace=True)
 
         csv.to_sql(
-            "outages", engine, if_exists="append",
+            "outage", engine, if_exists="append",
             dtype={
                 "station_id": sqlalchemy.types.Integer,
-                "status": sqlalchemy.types.String,
-                "start": sqlalchemy.types.DateTime,
-                "end": sqlalchemy.types.DateTime
+                "outage_type": sqlalchemy.types.String,
+                "outage_start": sqlalchemy.types.DateTime,
+                "outage_end": sqlalchemy.types.DateTime
             })
         print(filename, "imported.")

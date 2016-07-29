@@ -9,12 +9,13 @@ from pandas.tseries.offsets import Hour
 
 
 def complete(
-        db_engine, selector, start, end, sample_size=int(1.0e5), balance=None):
+        db_engine, station_id, start, end, sample_size=int(1.0e5),
+        balance=None):
     """
     sample_size will be ignored if balance is not None.
     """
     data = get_and_adjust_data(
-        db_engine, selector, start, end, sample_size)
+        db_engine, station_id, start, end, sample_size)
 
     # Balance or set to sample_size
     if balance is None:
