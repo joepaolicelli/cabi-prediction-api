@@ -13,5 +13,5 @@ def brbm_rf(Xtr, ytr, Xte=None, yte=None):
     rbm.n_iter = 250
     rbm.n_components = 100
 
-    simple_classification(
+    return simple_classification(
         classifier, Xtr, ytr, Xte, yte)

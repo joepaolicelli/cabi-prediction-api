@@ -1,4 +1,5 @@
 notes/
+temp/
 sandbox.py
 
 # Github's recommended python gitignore below this

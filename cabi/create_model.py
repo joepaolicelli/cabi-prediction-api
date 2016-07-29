@@ -5,7 +5,7 @@ from sklearn.externals import joblib
 
 
 def create_model(
-        fileprefix, db_engine, station_id, start, end, prep=complete,
+        file_prefix, db_engine, station_id, start, end, prep=complete,
         technique=random_forest):
     start = pd.to_datetime(start, infer_datetime_format=True)
     end = pd.to_datetime(end, infer_datetime_format=True)
@@ -15,5 +15,5 @@ def create_model(
     model_empty = technique(data["X"], data["yempty"])
     model_full = technique(data["X"], data["yfull"])
 
-    joblib.dump(model_empty, fileprefix + "_empty")
-    joblib.dump(model_full, fileprefix + "_full")
+    joblib.dump(model_empty, file_prefix + "_empty")
+    joblib.dump(model_full, file_prefix + "_full")
