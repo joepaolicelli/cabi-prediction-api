@@ -5,11 +5,12 @@ A postgres database is required. The environmental variable 'CABI_DB' should
 be set to a connection string of the format
 'username:password@host:port/db_name'.
 
-Time is stored in UTC.
+Timestamps are converted from UTC to US/Eastern, which they are stored as.
 """
 
 import os
 import pandas as pd
+import pytz
 import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
@@ -36,6 +37,7 @@ data = xmltodict.parse(requests.get(
 for st in data["stations"]["station"]:
     ts = pd.to_datetime(
         st["lastCommWithServer"], unit="ms", infer_datetime_format=True)
+    ts = ts.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("US/Eastern"))
 
     query = sql.text(
         "INSERT INTO bike_count (station_id, ts, bikes, spaces) "
