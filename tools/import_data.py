@@ -2,6 +2,12 @@
 #
 # Run this file directly, with all files to import listed as command line
 # arguments. To clear the database table, make the first argument "clear".
+#
+# Database information must be entered below.
+#
+# Also, if "import_data.py" is in the name of the file you're trying to
+# import, it's not going to work. This is to prevent this code from trying
+# to insert itself into the database.
 
 import pandas as pd
 import sqlalchemy
@@ -11,7 +17,7 @@ import sys
 # Database information.
 host = ""
 port = ""
-dbname = ""
+db_name = ""
 user = ""
 password = ""
 
@@ -19,9 +25,8 @@ password = ""
 engine = create_engine(
     "postgresql+psycopg2://"
     + user + ":" + password + "@"
-    + host + ":" + port + "/" + dbname)
+    + host + ":" + port + "/" + db_name)
 
-# Delete anything previously in the table.
 if sys.argv[1] == "clear" and engine.has_table("outage"):
     engine.execute("DROP TABLE outage;")
     print("Data cleared.")

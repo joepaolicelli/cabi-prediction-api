@@ -5,6 +5,9 @@ import pandas as pd
 
 def get_and_adjust_data(db_engine, station_id, start, end, sample_size):
     data_list = []
+    # "5T" is 5 minutes.
+    dti = pd.date_range(0, -1, freq="5T")
+    data = pd.Series(None, index=dti)
     # Add data in the bike count format.
     bike_counts = pd.read_sql_query(
         "SELECT ts, bikes, spaces FROM bike_count "
@@ -30,12 +33,12 @@ def get_and_adjust_data(db_engine, station_id, start, end, sample_size):
                 status = "full"
 
             # Create index with only one entry, ts.
-            # "5T" is 5 minutes.
             index = pd.date_range(ts, ts, freq="5T")
 
             data_list.append(pd.Series(status, index=index))
 
-    data = pd.concat(data_list)
+    if len(data_list) > 0:
+        data = pd.concat(data_list)
 
     data_list = []
     # Add data in the outage format.
@@ -63,11 +66,13 @@ def get_and_adjust_data(db_engine, station_id, start, end, sample_size):
 
     outage_data = pd.concat(data_list)
 
+    outage_data = outage_data.groupby(outage_data.index).first()
     # Remove any timestamps from outage_data that are in the bike_count data.
     unique = outage_data.index.difference(data.index)
+
     outage_data = outage_data.reindex(unique)
 
-    # Merge the two series' together.
+    # Merge the two series together.
     data = pd.concat([data, outage_data])
 
     # Remove any remaining stray duplicates.
