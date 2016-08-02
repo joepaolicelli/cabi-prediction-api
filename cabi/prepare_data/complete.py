@@ -62,7 +62,7 @@ def complete(
             (1 if row[0].dayofweek == 6 else 0),
             float(((row[0].hour * 60) + row[0].minute)) / 1440.0,
             float(row[0].month) / 12.0,
-            temp / 500.0,
+            temp / 50.0,
             float(weather.loc[hour].precip) / 15.0
         ]
 
