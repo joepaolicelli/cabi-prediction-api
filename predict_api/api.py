@@ -3,10 +3,12 @@ import falcon
 import json
 import os
 import pandas as pd
+from predict_api.auth import authorized
 from sqlalchemy import create_engine
 
 
 class StationStatus(object):
+    @falcon.before(authorized)
     def on_post(self, req, resp):
         query = json.loads(req.stream.read().decode('utf-8'))
 
