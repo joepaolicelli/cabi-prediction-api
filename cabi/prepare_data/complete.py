@@ -30,8 +30,13 @@ def complete(
     yempty = []
     yfull = []
 
+    weather_isd = pd.read_sql_query(
+        "SELECT * FROM weather_isd", db_engine, index_col="ts")
+
     weather = pd.read_sql_query(
         "SELECT * FROM weather", db_engine, index_col="ts")
+
+    weather = pd.concat([weather_isd, weather])
 
     weather.index = weather.index.tz_localize(None)
 
@@ -52,6 +57,13 @@ def complete(
             temp_hour = temp_hour - datetime.timedelta(hours=1)
             temp = float(weather.loc[temp_hour].temp)
 
+        precip_hour = hour
+        precip = float(weather.loc[hour].precip)
+
+        while pd.isnull(precip):
+            precip_hour = precip_hour - datetime.timedelta(hours=1)
+            precip = float(weather.loc[precip_hour].precip)
+
         features = [
             (1 if row[0].dayofweek == 0 else 0),
             (1 if row[0].dayofweek == 1 else 0),
@@ -63,7 +75,7 @@ def complete(
             float(((row[0].hour * 60) + row[0].minute)) / 1440.0,
             float(row[0].month) / 12.0,
             temp / 50.0,
-            float(weather.loc[hour].precip) / 15.0
+            precip / 15.0
         ]
 
         X.append(features)
