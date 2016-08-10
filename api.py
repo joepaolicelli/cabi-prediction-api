@@ -1,9 +1,9 @@
+from api_utils.auth import authorized
 from cabi.predict import predict
 import falcon
 import json
 import os
 import pandas as pd
-from predict_api.auth import authorized
 from sqlalchemy import create_engine
 
 
