@@ -1,7 +1,7 @@
 import os
 import sys
 
-INTERP = "/opt/sites/CapitalBikeshareML/current/ENV/bin/python"
+INTERP = "/opt/sites/CapitalBikeshareML-API/current/ENV/bin/python"
 # INTERP is present twice so that the new Python interpreter knows the actual
 # executable path
 if sys.executable != INTERP:
