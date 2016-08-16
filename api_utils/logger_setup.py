@@ -3,7 +3,7 @@ import logging
 
 def logger_setup():
     logger = logging.getLogger("cabi_api")
-    fh = logging.FileHandler('cabi_api.log')
+    fh = logging.FileHandler('log/cabi_api.log')
     fh.setLevel(logging.DEBUG)
     sh = logging.StreamHandler()
     sh.setLevel(logging.ERROR)

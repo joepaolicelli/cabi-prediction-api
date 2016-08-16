@@ -9,6 +9,7 @@ if sys.executable != INTERP:
 
 from api_utils.auth import authorized       # noqa: E402 (Imports not at top)
 from api_utils.logger_setup import logger_setup     # noqa: E402
+from cabi.create_model import create_model          # noqa: E402
 from cabi.predict import predict                    # noqa: E402
 import falcon                                       # noqa: E402
 import json                                         # noqa: E402
@@ -25,15 +26,20 @@ class StationStatus(object):
     def on_post(self, req, resp):
         logger.info("POST request received.")
         try:
-            query = json.loads(req.stream.read().decode('utf-8'))
-
             engine = create_engine(
                 "postgresql+psycopg2://" + os.environ["CABI_DB"])
+
+            if not os.path.isdir("model"):
+                os.makedirs("model")
+                create_model(
+                    "model/model", engine, 31230, "01/02/2015", "12/30/2015")
+
+            query = json.loads(req.stream.read().decode('utf-8'))
 
             ts = pd.to_datetime(query["time"], infer_datetime_format=True)
 
             pred = predict(
-                "temp/model", engine, int(query["station_id"]), ts)
+                "model/model", engine, int(query["station_id"]), ts)
 
             resp.body = json.dumps({
                 "prediction": {
