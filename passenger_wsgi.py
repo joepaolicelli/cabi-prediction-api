@@ -1,10 +1,11 @@
 import os
 import sys
 
+is_dev = (os.environ["CABI_ENV"] == "DEV")
 INTERP = "/opt/sites/CapitalBikeshareML-API/current/ENV/bin/python"
 # INTERP is present twice so that the new Python interpreter knows the actual
 # executable path
-if sys.executable != INTERP:
+if (not is_dev) and sys.executable != INTERP:
     os.execl(INTERP, INTERP, *sys.argv)
 
 from api_utils.auth import authorized       # noqa: E402 (Imports not at top)
@@ -24,7 +25,23 @@ logger = logging.getLogger("cabi_api")
 class StationStatus(object):
     @falcon.before(authorized)
     def on_post(self, req, resp):
-        logger.info("POST request received.")
+        """
+        Expects a json body of the following structure:
+
+        {
+          "datetime": string (date and time),
+          "location": string
+        }
+
+        The datetime string is passed to panda's to_datetime method, so any
+        reasonable format (including unix timestamps) should be fine.
+
+        The location string is passed to the Google Maps API to get
+        coordinates, so specific addresses or general neighboorhoods (anything
+        that works with Google Maps, actually) will both work.
+        """
+
+        logger.info("POST request.")
         try:
             engine = create_engine(
                 "postgresql+psycopg2://" + os.environ["CABI_DB"])

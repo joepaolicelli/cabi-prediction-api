@@ -1,12 +1,17 @@
 import base64
 import falcon
+import logging
 import os
+
+logger = logging.getLogger("cabi_api")
 
 
 def authorized(req, resp, _1):
+    logger.info("Checking if request is authorized.")
     auth_header = req.get_header("Authorization")
 
     if not auth_header:
+        logger.info("No auth header.")
         raise falcon.HTTPUnauthorized(
             "Authentication Required", "Authentication Required",
             ["cabi_predict_api"])
@@ -19,8 +24,10 @@ def authorized(req, resp, _1):
 
     if (req_user == os.environ["API_USER"] and
             req_pass == os.environ["API_PASS"]):
+        logger.info("Credentials valid, request authorized.")
         return True
 
+    logger.info("Credentials invalid.")
     raise falcon.HTTPUnauthorized(
         "Authentication Incorrect", "Authentication Incorrect",
         ["cabi_predict_api"])
