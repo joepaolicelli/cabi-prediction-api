@@ -15,7 +15,7 @@ def complete(
     sample_size will be ignored if balance is not None.
     """
     data = get_and_adjust_data(
-        db_engine, station_id, start, end, sample_size)
+        db_engine, station_id, start, end)
 
     # Balance or set to sample_size
     if balance is None:
