@@ -36,7 +36,8 @@ def get_and_adjust_data(db_engine, station_id, start, end):
             ts = pd.to_datetime(bike_count[1], infer_datetime_format=True)
             # Round the timestamp to the nearest five minute mark.
             ts += datetime.timedelta(seconds=150)
-            ts = ts.replace(minute=(ts.minute - (ts.minute % 5)), second=0)
+            ts = ts.replace(
+                minute=(ts.minute - (ts.minute % 5)), second=0, microsecond=0)
 
             # A status of np.nan means the station is neither full nor empty.
             status = np.nan
@@ -68,11 +69,13 @@ def get_and_adjust_data(db_engine, station_id, start, end):
             ostart = pd.to_datetime(outage[2], infer_datetime_format=True)
             ostart += datetime.timedelta(seconds=150)
             ostart = ostart.replace(
-                minute=(ostart.minute - (ostart.minute % 5)), second=0)
+                minute=(ostart.minute - (ostart.minute % 5)),
+                second=0, microsecond=0)
             oend = pd.to_datetime(outage[3], infer_datetime_format=True)
             oend += datetime.timedelta(seconds=150)
             oend = oend.replace(
-                minute=(oend.minute - (oend.minute % 5)), second=0)
+                minute=(oend.minute - (oend.minute % 5)),
+                second=0, microsecond=0)
 
             index = pd.date_range(ostart, oend, freq="5T")
 
@@ -110,15 +113,17 @@ def get_and_adjust_data(db_engine, station_id, start, end):
         range_end = outage_data_end if outage_data_end < end else end
 
         range_start = range_start.replace(
-            minute=(range_start.minute - (range_start.minute % 5)), second=0)
+            minute=(range_start.minute - (range_start.minute % 5)),
+            second=0, microsecond=0)
         range_end = range_end.replace(
-            minute=(range_end.minute - (range_end.minute % 5)), second=0)
+            minute=(range_end.minute - (range_end.minute % 5)),
+            second=0, microsecond=0)
 
         # Add NaN for those times when the station is not full or empty.
         outage_data = outage_data.reindex(pd.date_range(
             range_start, range_end, freq="5T"))
 
-    except NameError as ex:
+    except ValueError as ex:
         outage_data = None
         print(ex)
 
