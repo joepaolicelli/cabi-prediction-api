@@ -3,6 +3,7 @@ import sys
 
 is_dev = (os.environ["CABI_ENV"] == "DEV")
 INTERP = "/opt/sites/CapitalBikeshareML-API/current/ENV/bin/python"
+# This allows the API to run properly in a virtualenv.
 # INTERP is present twice so that the new Python interpreter knows the actual
 # executable path
 if (not is_dev) and sys.executable != INTERP:
