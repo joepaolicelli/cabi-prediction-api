@@ -84,11 +84,6 @@ def get_and_adjust_data(db_engine, station_id, start, end):
         outage_data = pd.concat(data_list)
 
         outage_data = outage_data.groupby(outage_data.index).first()
-        # Remove any timestamps from outage_data that are in the bike_count
-        # data.
-        unique = outage_data.index.difference(data.index)
-
-        outage_data = outage_data.reindex(unique)
 
         conn = db_engine.connect()
 
@@ -122,6 +117,11 @@ def get_and_adjust_data(db_engine, station_id, start, end):
         # Add NaN for those times when the station is not full or empty.
         outage_data = outage_data.reindex(pd.date_range(
             range_start, range_end, freq="5T"))
+
+        # Remove any timestamps from outage_data that are in the bike_count
+        # data.
+        unique = outage_data.index.difference(data.index)
+        outage_data = outage_data.reindex(unique)
 
     except ValueError as ex:
         outage_data = None

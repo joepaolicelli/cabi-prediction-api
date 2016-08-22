@@ -5,7 +5,7 @@ An API to provide predictions of bike availability for Washington D.C.'s
 
 ## Data
 
-All data in the database is stored in US/Eastern time. Included scripts to
+All dates in the database are stored in US/Eastern time. Included scripts to
 import data convert dates and times to US/Eastern (if needed) before storing
 the data.
 
@@ -39,6 +39,17 @@ Data Source: NOAA's
 
 Import with `tools/import_weather_data.py`.
 
+### Database Tables
+
+- bike_count: Bike station data in the format of counts of bikes and empty
+  spaces. This is the format saved by the `cabi_recorder` script.
+- outage: Bike station data in the format of outages (instances of empty or
+  full stations) This is the format imported by the `import_data` tool.
+- weather: Weather data saved by the `weather_recorder` script.
+- weather_isd: Weather data imported by the `import_weather_data` tool.
+- forecast: Upcoming hourly forecasts.
+- station_info: Stores metadata about stations.
+
 ## Setup
 
 Python 3 must be installed.
@@ -50,6 +61,10 @@ be set to a connection string of the format
 The environmental variable `WUNDERGROUND_KEY` must be set to a valid API key
 for the [Weather Underground
 API](https://www.wunderground.com/weather/api/d/docs?d=index).
+
+The environmental variable `GMAPS_KEY` must be set to a valid API key for
+[Google Maps Web
+Services](https://developers.google.com/maps/web-services/overview).
 
 The environmental variables `API_USER` and `API_PASS` must be set to the
 username and password that is required to access the prediction API.
@@ -80,16 +95,50 @@ pip install gunicorn
 gunicorn passenger_wsgi:app
 ```
 
-### Data Collector Scripts
+### Scripts
 
-Two scripts, `cabi_recorder.sh` and `weather_recorder.sh`, are provided in the
-`tools` folder to collect and store current bikeshare station data and weather
-data in the database. They are intended to be set as cron jobs, for example:
+A number of scripts should be run regularly to keep the data and models
+updated. Shell scripts are provided in the `tools` folder to run the proper
+python code and keep logs in the `log` folder. These scripts should be kept
+in the `tools` folder, otherwise the paths of the files they refer to will
+have to be changed.
 
+The included scripts are:
+
+- `cabi_recorder.sh`: Stores current bikeshare station data, for future use
+in building models.
+- `weather_recorder.sh`: Stores current weather data, for future use in
+building models.
+- `get_station_info.sh`: Stores the current list of bikeshare stations.
+- `build_models.sh`: Builds models for all bikeshare stations.
+- `get_forecast.sh`: Stores upcoming hourly forecasts.
+
+Technically, the only script that must be run regularly is `get_forecast.sh`.
+Hourly weather forecasts are only available for ten days, so the API will only
+be able to make predictions for ten days from the last time the script was
+run.
+
+`get_station_info.sh` must be run at least once, but should be run more often,
+as Capital Bikeshare adds and removes stations somewhat often.
+
+Running `cabi_recorder.sh` and `weather_recorder.sh` regularly, and then
+running `build_models.sh` occasionally, will allow new models to be created
+automatically will recent data. Alternatively, you can just import historical
+data once with `import_data.py` and `import_weather_data.py`, and then run
+`build_models.sh` once. However, your models will likely get less accurate
+as time progresses.
+
+All scripts are quick except for `build_models.sh`, which may take several
+hours to run. We recommend running this weekly or every other week.
+
+Running the scripts with cron can be done as follows:
 ```
-# Set both scripts to run every five minutes.
+# Feel free to change the frequencies as needed.
+@weekly /full/path/CapitalBikeshareML/tools/build_models.sh
 */5 * * * * /full/path/CapitalBikeshareML/tools/cabi_recorder.sh
-*/5 * * * * /full/path/CapitalBikeshareML/tools/weather_recorder.sh
+*/20 * * * * /full/path/CapitalBikeshareML/tools/get_forecast.sh
+@daily /full/path/CapitalBikeshareML/tools/get_station_info.sh
+*/30 * * * * /full/path/CapitalBikeshareML/tools/weather_recorder.sh
 ```
 
 cron must be set up so the scripts can find the `python` command and can

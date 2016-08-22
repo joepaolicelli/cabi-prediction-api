@@ -1,10 +1,10 @@
 from cabi.create_model import create_model
 import datetime
+from dateutil.relativedelta import relativedelta
 import os
-import pandas as pd
 from sqlalchemy import create_engine, sql
 
-START_DATE = pd.to_datetime("January 1, 2014")
+START_DATE = datetime.date.today() - relativedelta(months=26)
 END_DATE = datetime.date.today()
 
 # Establish database connection.

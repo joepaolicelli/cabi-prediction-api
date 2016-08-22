@@ -1,12 +1,9 @@
-from cabi.data_access.weather import get_forecast
 from sklearn.externals import joblib
 
 
-def predict(file_prefix, db_engine, station_id, ts):
+def predict(file_prefix, db_engine, station_id, ts, forecast):
     model_empty = joblib.load(file_prefix + "_empty")
     model_full = joblib.load(file_prefix + "_full")
-
-    forecast = get_forecast(ts)
 
     features = [
         (1 if ts.dayofweek == 0 else 0),

@@ -2,4 +2,4 @@
 cd $(dirname "$0")
 cd ..
 
-python build_models.py
+python build_models.py >> log/build_models.log

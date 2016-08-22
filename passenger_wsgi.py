@@ -10,14 +10,17 @@ if (not is_dev) and sys.executable != INTERP:
     os.execl(INTERP, INTERP, *sys.argv)
 
 from api_utils.auth import authorized       # noqa: E402 (Imports not at top)
-from api_utils.logger_setup import logger_setup     # noqa: E402
-from cabi.create_model import create_model          # noqa: E402
-from cabi.predict import predict                    # noqa: E402
-import falcon                                       # noqa: E402
-import json                                         # noqa: E402
-import logging                                      # noqa: E402
-import pandas as pd                                 # noqa: E402
-from sqlalchemy import create_engine                # noqa: E402
+from api_utils.logger_setup import logger_setup         # noqa: E402
+from cabi.closest_stations import closest_stations      # noqa: E042
+from cabi.create_model import create_model              # noqa: E402
+from cabi.data_access.googlemaps import get_loc_info    # noqa: E402
+from cabi.data_access.weather import get_forecast       # noqa: E042
+from cabi.predict import predict                        # noqa: E402
+import falcon                                           # noqa: E402
+import json                                             # noqa: E402
+import logging                                          # noqa: E402
+import pandas as pd                                     # noqa: E402
+from sqlalchemy import create_engine                    # noqa: E402
 
 logger_setup()
 logger = logging.getLogger("cabi_api")
@@ -31,7 +34,8 @@ class StationStatus(object):
 
         {
           "datetime": string (date and time),
-          "location": string
+          "location": string[,
+          "station_count": integer]
         }
 
         The datetime string is passed to panda's to_datetime method, so any
@@ -40,6 +44,10 @@ class StationStatus(object):
         The location string is passed to the Google Maps API to get
         coordinates, so specific addresses or general neighboorhoods (anything
         that works with Google Maps, actually) will both work.
+
+        An optional station_count parameter can be passed to specify the
+        number of closest stations that should be returned. The default is
+        five.
         """
 
         logger.info("POST request.")
@@ -47,25 +55,56 @@ class StationStatus(object):
             engine = create_engine(
                 "postgresql+psycopg2://" + os.environ["CABI_DB"])
 
-            if not os.path.isdir("model"):
-                os.makedirs("model")
-                create_model(
-                    "model/model", engine, 31230, "01/02/2015", "12/30/2015")
+            if not os.path.isdir("models"):
+                logger.error("models directory not found.")
+                raise falcon.HTTPServiceUnavailable
 
             query = json.loads(req.stream.read().decode('utf-8'))
 
-            ts = pd.to_datetime(query["time"], infer_datetime_format=True)
+            ts = pd.to_datetime(query["datetime"], infer_datetime_format=True)
 
-            pred = predict(
-                "model/model", engine, int(query["station_id"]), ts)
+            loc = get_loc_info(query["location"])
+            forecast = get_forecast(ts, engine)
 
-            resp.body = json.dumps({
-                "prediction": {
-                    "empty": pred["empty"],
-                    "full": pred["full"]}})
+            results = {
+                "address": loc["formatted_address"],
+                "stations": [],
+                "forecast": {
+                    "condition": forecast["condition"]
+                }
+            }
+
+            coord = (
+                float(loc["geometry"]["location"]["lat"]),
+                float(loc["geometry"]["location"]["lng"]))
+
+            count = query["station_count"] if (
+                "station_count" in query) else 5
+
+            stations = closest_stations(coord, engine, count=int(count))
+
+            for station in stations:
+                try:
+                    pred = predict(
+                        "models/station_" + str(station["id"]) + "/model",
+                        engine,
+                        int(station["id"]),
+                        ts, forecast)
+
+                    results["stations"].append({
+                        "name": station["name"],
+                        "distance": station["distance"],
+                        "prediction": pred
+                    })
+
+                except FileNotFoundError as err:
+                    logger.error(err)
+
+            resp.body = json.dumps(results)
 
         except Exception as err:
             logger.error(err)
+            raise
 
 station_status = StationStatus()
 
