@@ -8,6 +8,7 @@ be set to a connection string of the format
 Timestamps are converted from UTC to US/Eastern, which they are stored as.
 """
 
+import datetime
 import os
 import pandas as pd
 import pytz
@@ -52,5 +53,6 @@ try:
             bikes=st["nbBikes"], spaces=st["nbEmptyDocks"])
 
 except Exception as err:
+    print(datetime.datetime.now().strftime('%c'))
     print(traceback.format_exc())
     raise

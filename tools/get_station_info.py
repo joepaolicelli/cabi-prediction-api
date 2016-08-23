@@ -1,3 +1,4 @@
+import datetime
 import os
 import requests
 from sqlalchemy import create_engine, sql
@@ -36,5 +37,6 @@ try:
             lat=float(st["lat"]), long=float(st["long"]))
 
 except Exception as err:
+    print(datetime.datetime.now().strftime('%c'))
     print(traceback.format_exc())
     raise

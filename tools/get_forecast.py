@@ -40,5 +40,6 @@ try:
             condition=hour["condition"])
 
 except Exception as err:
+    print(datetime.datetime.now().strftime('%c'))
     print(traceback.format_exc())
     raise

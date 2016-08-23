@@ -6,6 +6,7 @@ be set to a connection string of the format
 'username:password@host:port/db_name'.
 """
 
+import datetime
 import os
 import pandas as pd
 import requests
@@ -46,5 +47,6 @@ try:
         precip=float(req["current_observation"]["precip_1hr_metric"]))
 
 except Exception as err:
+    print(datetime.datetime.now().strftime('%c'))
     print(traceback.format_exc())
     raise
