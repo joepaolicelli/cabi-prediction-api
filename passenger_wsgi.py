@@ -17,6 +17,7 @@ from cabi.data_access.googlemaps import get_loc_info    # noqa: E402
 from cabi.data_access.weather import get_forecast       # noqa: E042
 from cabi.predict import predict                        # noqa: E402
 import falcon                                           # noqa: E402
+from falcon_cors import CORS                            # noqa: E402
 import json                                             # noqa: E402
 import logging                                          # noqa: E402
 import pandas as pd                                     # noqa: E402
@@ -27,7 +28,6 @@ logger = logging.getLogger("cabi_api")
 
 
 class StationStatus(object):
-    @falcon.before(authorized)
     def on_post(self, req, resp):
         """
         Expects a json body of the following structure:
@@ -68,10 +68,13 @@ class StationStatus(object):
 
             results = {
                 "address": loc["formatted_address"],
-                "stations": [],
+                "date": ts.strftime("%A %B %d, %Y"),
                 "forecast": {
                     "condition": forecast["condition"]
-                }
+                },
+                "stations": [],
+                "status": "success",
+                "time": ts.strftime("%I:%M %p")
             }
 
             coord = (
@@ -104,9 +107,12 @@ class StationStatus(object):
 
         except Exception as err:
             logger.error(err)
-            raise
+            resp.body = json.dumps({"status": "error"})
 
 station_status = StationStatus()
 
-app = application = falcon.API()
+cors = CORS(
+    allow_all_origins=True, allow_all_methods=True, allow_all_headers=True)
+
+app = application = falcon.API(middleware=[cors.middleware])
 app.add_route('/', station_status)
