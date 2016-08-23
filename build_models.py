@@ -35,5 +35,6 @@ try:
             model_path + "/model", engine, station_id, START_DATE, END_DATE)
 
 except Exception as err:
+    print(datetime.datetime.now().strftime('%c'))
     print(traceback.format_exc())
     raise
