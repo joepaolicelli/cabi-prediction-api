@@ -4,6 +4,7 @@ import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
 from sqlalchemy.types import DateTime, Float, String
+import traceback
 
 try:
     req = requests.get(
@@ -39,4 +40,5 @@ try:
             condition=hour["condition"])
 
 except Exception as err:
-    print(err)
+    print(traceback.format_exc())
+    raise

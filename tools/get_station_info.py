@@ -3,6 +3,7 @@ import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
 from sqlalchemy.types import Float, Integer, String
+import traceback
 import xmltodict
 
 try:
@@ -35,4 +36,5 @@ try:
             lat=float(st["lat"]), long=float(st["long"]))
 
 except Exception as err:
-    print(err)
+    print(traceback.format_exc())
+    raise

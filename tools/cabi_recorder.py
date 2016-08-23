@@ -15,6 +15,7 @@ import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
 from sqlalchemy.types import DateTime, Integer
+import traceback
 import xmltodict
 
 try:
@@ -51,4 +52,5 @@ try:
             bikes=st["nbBikes"], spaces=st["nbEmptyDocks"])
 
 except Exception as err:
-    print(err)
+    print(traceback.format_exc())
+    raise

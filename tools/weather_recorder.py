@@ -12,6 +12,7 @@ import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
 from sqlalchemy.types import DateTime, Float
+import traceback
 
 try:
     # Establish database connection.
@@ -45,4 +46,5 @@ try:
         precip=float(req["current_observation"]["precip_1hr_metric"]))
 
 except Exception as err:
-    print(err)
+    print(traceback.format_exc())
+    raise
