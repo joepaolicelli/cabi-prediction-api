@@ -1,6 +1,5 @@
 import datetime
 import os
-import pytz
 import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
@@ -34,9 +33,6 @@ try:
 
     for hour in req["hourly_forecast"]:
         ts = datetime.datetime.fromtimestamp(int(hour["FCTTIME"]["epoch"]))
-
-        ts = ts.replace(tzinfo=pytz.utc).astimezone(
-            pytz.timezone("US/Eastern")).replace(tzinfo=None)
 
         conn.execute(
             query,
