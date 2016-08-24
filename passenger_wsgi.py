@@ -70,7 +70,9 @@ class StationStatus(object):
                 "address": loc["formatted_address"],
                 "date": ts.strftime("%A %B %d, %Y"),
                 "forecast": {
-                    "condition": forecast["condition"]
+                    "condition": forecast["condition"],
+                    "tempC": int(forecast["temp"]),
+                    "tempF": int(((float(int(forecast["temp"]))*9)/5) + 32)
                 },
                 "stations": [],
                 "status": "success",
