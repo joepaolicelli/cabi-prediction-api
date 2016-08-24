@@ -9,6 +9,7 @@ be set to a connection string of the format
 import datetime
 import os
 import pandas as pd
+import pytz
 import requests
 from sqlalchemy import create_engine, sql
 from sqlalchemy import Column, MetaData, Table
@@ -36,6 +37,8 @@ try:
     ts = pd.to_datetime(
         req["current_observation"]["local_time_rfc822"],
         infer_datetime_format=True)
+    ts = ts.replace(tzinfo=pytz.utc).astimezone(
+        pytz.timezone("US/Eastern")).replace(tzinfo=None)
 
     query = sql.text(
         "INSERT INTO weather (ts, temp, precip) "

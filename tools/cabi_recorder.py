@@ -42,7 +42,7 @@ try:
             st["lastCommWithServer"], unit="ms", infer_datetime_format=True)
         # Convert from UTC to Eastern time.
         ts = ts.replace(tzinfo=pytz.utc).astimezone(
-            pytz.timezone("US/Eastern"))
+            pytz.timezone("US/Eastern")).replace(tzinfo=None)
 
         query = sql.text(
             "INSERT INTO bike_count (station_id, ts, bikes, spaces) "

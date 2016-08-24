@@ -2,6 +2,9 @@
 # postgres database. ISD lite data can be found here:
 # http://www1.ncdc.noaa.gov/pub/data/noaa/isd-lite/
 #
+# Dates from this source are in UTC, this script converts to local time
+# before commiting to the database.
+#
 # Run this file directly, with all files to import listed as command line
 # arguments. To clear the database table, make the first argument "clear".
 #

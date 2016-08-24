@@ -2,6 +2,8 @@
 # in the format available for export from the excellent CaBi Tracker:
 # http://cabitracker.com/outage_history.php
 #
+# Dates from this source are already in local time.
+#
 # Run this file directly, with all files to import listed as command line
 # arguments. To clear the database table, make the first argument "clear".
 #
