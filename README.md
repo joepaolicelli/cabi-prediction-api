@@ -3,6 +3,137 @@
 An API to provide predictions of bike availability for Washington D.C.'s
 [Capital Bikeshare](https://www.capitalbikeshare.com/).
 
+### Table of Contents
+- [Overview](#overview)
+- [API Format](#api-format)
+- [Prediction Methodology](#prediction-methodology-overview)
+- [Data](#data)
+- [Setup](#setup)
+
+## Overview
+
+This API uses [Capital Bikeshare](https://www.capitalbikeshare.com/) data and
+weather data to predict the chances a bikeshare station will have at least one
+bike available and at least one empty bike dock available, given a date and
+time. For each bikeshare station, models are built using [random
+forests](https://en.wikipedia.org/wiki/Random_forest) based on historical
+station status data and historical weather data. The API then accepts a
+datetime string and a location string (such as a street address or
+neighborhood), and returns the closest stations and the availability
+predictions.
+
+This project uses Python 3. Data analysis and machine learning were done using
+[Pandas](http://pandas.pydata.org/) and
+[scikit-learn](http://scikit-learn.org/stable/). The API was built using
+[Falcon](https://falconframework.org/).
+
+[I](https://joepaolicelli.com/) built this project during the summer of 2016
+while I was an intern at [Mission Data](https://www.missiondata.com/). I
+greatly appreciate their permission to open source this project and post it
+here on GitHub, as well as their help and guidance on this project.
+
+Mission Data is currently hosting this API (not currently for public use), with
+some minor enhancements, as well as [a web application where you can get
+predictions](https://labs.missiondata.com/CapitalBikeshareML). The original
+version of the web application was written by me in Angular 2 with TypeScript,
+but significant UI and style improvements have since been made by others at
+Mission Data.
+
+A series of three lab notes have been published detailing the progression of
+this project. The
+[first](https://journal.missiondata.com/lab-notes-machine-learning-and-capital-bikeshare-c240125c0a1)
+[two](https://journal.missiondata.com/lab-notes-machine-learning-part-ii-724dc1628faf)
+explain the machine learning that is used to make the predictions, and [the
+third](https://journal.missiondata.com/introduction-1be76e0e8b35) discusses a
+conversational Slack bot (which I did not have a part in building) that uses
+the API. I also gave a brief presentation about the project at the [sixth CaBi
+Hack Night
+meetup](https://www.meetup.com/Transportation-Techies/events/234652961/) in
+November 2016, slides are available
+[here](https://joepaolicelli.com/files/cabi_presentation.pdf).
+
+This project was my first time using Python and doing any machine learning.
+Given that, I'm pretty happy with how it turned out. As with any complex
+project (but perhaps this one in particular due to my inexperience and limited
+timeframe), there are many potential improvements and expansions. This code is
+licensed under the open source MIT License, and you are more than welcome to
+build on it or adapt it for your own uses.
+
+## API Format
+
+The API accepts a POST request and expects a json body of the following
+structure:
+
+```
+{
+  "datetime": string (date and time),
+  "location": string[,
+  "station_count": integer]
+}
+```
+
+The `datetime` string is passed to Panda's `to_datetime` method, so any
+reasonable format (including unix timestamps) should be fine.
+
+The `location` string is passed to the Google Maps API to get
+coordinates, so specific addresses or general neighboorhoods (anything
+that works with Google Maps, actually) will work.
+
+An optional `station_count` parameter can be passed to specify the
+number of closest stations that should be returned. The default is
+five.
+
+For example:
+```
+{
+  "datetime": "November 08, 2016 5:00 pm",
+  "location": "Capitol Hill",
+  "station_count": 5
+}
+```
+
+The response may look like this (some stations removed for brevity):
+
+```
+{
+  "address": "Capitol Hill, Washington, DC, USA",
+  "date": "Tuesday November 08, 2016",
+  "time": "05:00 PM",
+  "forecast": {
+    "tempC": 17,
+    "tempF": 62,
+    "condition": "Partly Cloudy"
+  },
+  "status": "success",
+  "stations": [
+    {
+      "name": "Eastern Market \/ 7th & North Carolina Ave SE",
+      "distance": 256.5717285669,
+      "prediction": {
+        "empty": 0.20066666666667,
+        "full": 0
+      }
+    },
+    ...
+  ]
+}
+```
+
+## Prediction Methodology Overview
+
+For each bikeshare station, models are built using [random
+forests](https://en.wikipedia.org/wiki/Random_forest) based on historical
+station status data and historical weather data. Specifically, the features
+used are:
+- Seven binary features, one for each day of the week
+- Minute of the day
+- Month
+- Temperature
+- Hourly Precipitation
+
+Values are roughly scaled to be between 0 and 1, inclusive. (The one exception
+is temperature, which is scaled to be between -1 and 1.)
+
 ## Data
 
 All dates in the database are stored in US/Eastern time. Included scripts to
@@ -123,10 +254,10 @@ as Capital Bikeshare adds and removes stations somewhat often.
 
 Running `cabi_recorder.sh` and `weather_recorder.sh` regularly, and then
 running `build_models.sh` occasionally, will allow new models to be created
-automatically will recent data. Alternatively, you can just import historical
-data once with `import_data.py` and `import_weather_data.py`, and then run
-`build_models.sh` once. However, your models will likely get less accurate
-as time progresses.
+automatically that include recent data. Alternatively, you can just import
+historical data once with `import_data.py` and `import_weather_data.py`, and
+then run `build_models.sh` once. However, your models will likely get less
+accurate as time progresses.
 
 All scripts are quick except for `build_models.sh`, which may take several
 hours to run. We recommend running this weekly or every other week.
